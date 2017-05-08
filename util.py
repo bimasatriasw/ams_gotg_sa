@@ -1,6 +1,8 @@
 import nltk
 import string
 
+from nltk.corpus import stopwords
+
 #
 # This method is basically reading files (in this case, the file is specifically for Twecoll),
 # and finding three main things: date, user, and tweet content.
@@ -43,20 +45,27 @@ def extract(filename):
 
 	return dataset_arr
 
+
 #
-# This method is generating bag of words from each tweet.
-# The method returns array consisting of bag of words from each tweet 
+# Membuang stopwords dari konten dataset
 #
 # by Bima :)
-def tokenize(dataset):
+def filter_stopwords(dataset):
 
-	bags_of_words = []
+	stop = set(stopwords.words('english'))
 
-	printable = set(string.printable)
+	for data in dataset:
 
-	for line in dataset_arr:
-		tokens = nltk.word_tokenize(filter(lambda x: x in printable, line[2])) # tokenizing needs to throw all ASCII code away. hence, the lambda function
+		filtered_content = ''
 
-		bags_of_words.append(tokens)
+		for word in data[2].split():
 
-	return bags_of_words
+			if word.lower() not in stop:
+				filtered_content = filtered_content + ' ' + word
+
+		data[2] = filtered_content
+
+	return dataset
+
+
+
