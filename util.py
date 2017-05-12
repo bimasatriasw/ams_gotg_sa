@@ -95,8 +95,13 @@ def sentiment_checker(dataset):
 		 		score -= 1
 
 		score_array.append(score)
+
+	mins = min(score_array)
+	maxs = max(score_array)
+
+	scores = [(float(i) - mins)/(maxs - mins) for i in score_array]
 		
-	return score_array
+	return scores
 
 #
 # Joining feature to existing vector
@@ -106,7 +111,6 @@ def add_feature(vectors, feature):
 	i = 0
 	for vector in vectors:
 		vector.append(feature[i])
-		print i
 		i += 1
 
 	vectors = scipy.sparse.csr_matrix(np.array(vectors).astype(float))
