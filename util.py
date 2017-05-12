@@ -1,5 +1,7 @@
 import nltk
 import string
+import numpy as np
+import scipy
 
 from nltk.corpus import stopwords
 
@@ -10,7 +12,6 @@ from nltk.corpus import stopwords
 # 1st dimension is document
 # 2nd dimension is date, user, and content.
 # 
-# by Bima :)
 def extract(filename):
 
 	dataset = open(filename, 'r')
@@ -25,7 +26,8 @@ def extract(filename):
 
 	for line in lines:
 
-		words = line.split(' ') 
+		lines2 = line.split('#tagnyajadi#')
+		words = lines2[0].split(' ') 
 
 		i = 0
 		date = user = tweet = link = ''
@@ -39,7 +41,11 @@ def extract(filename):
 				tweet = tweet + ' ' + word
 			i += 1
 
-		dataset_arr.append([date.strip(), user, tweet.strip()])
+		# Filtering emojis
+		printable = set(string.printable)
+		tweet = filter(lambda x: x in printable, tweet)
+
+		dataset_arr.append([date.strip(), user, tweet.strip(), lines2[1]])
 
 	dataset.close()
 
@@ -49,7 +55,6 @@ def extract(filename):
 #
 # Membuang stopwords dari konten dataset
 #
-# by Bima :)
 def filter_stopwords(dataset):
 
 	stop = set(stopwords.words('english'))
@@ -67,5 +72,44 @@ def filter_stopwords(dataset):
 
 	return dataset
 
+#
+# Memberi nilai dari kalimat pada tiap data menggunakan sentiment lexicon
+# Akan mengembalikan list nilai dari masing-masing data
+#
+def sentiment_checker(dataset):
 
+	positive_words = np.array(file('corpus/positive-words.txt', 'r').read().split('\n'))
+	negative_words = np.array(file('corpus/negative-words.txt', 'r').read().split('\n'))
+
+	score_array = []
+
+	for data in dataset:
+		
+		tokens = nltk.word_tokenize(data[2])
+		score = 0
+		
+		for token in tokens:
+		 	if token.lower() in positive_words:
+		 		score += 1
+		 	elif token.lower() in negative_words:
+		 		score -= 1
+
+		score_array.append(score)
+		
+	return score_array
+
+#
+# Joining feature to existing vector
+#
+def add_feature(vectors, feature):
+
+	i = 0
+	for vector in vectors:
+		vector.append(feature[i])
+		print i
+		i += 1
+
+	vectors = scipy.sparse.csr_matrix(np.array(vectors).astype(float))
+
+	return vectors
 
